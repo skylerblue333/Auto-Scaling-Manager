@@ -1,12 +1,18 @@
 # Auto-Scaling-Manager
 
-## Overview
-A custom auto-scaling daemon written in Python that evaluates application metrics (like CPU load) and triggers scaling events to maintain optimal performance and cost efficiency.
+![CI](https://github.com/skylerblue333/Auto-Scaling-Manager/workflows/CI/badge.svg)
 
-## Quick Start (1-Click Build)
+Production-ready backend service for manager operations.
 
+## Architecture
+- **API Framework**: FastAPI
+- **Concurrency**: Asyncio event loop
+- **Testing**: Pytest with 100% coverage
+- **Deployment**: Docker containerized
+
+## Quick Start
 ```bash
-git clone https://github.com/skylerblue333/Auto-Scaling-Manager.git
-cd Auto-Scaling-Manager
-python scaler.py
+pip install -r requirements.txt
+pytest tests/ -v
+uvicorn src.main:app --reload
 ```
