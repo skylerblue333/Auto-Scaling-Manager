@@ -18,7 +18,7 @@ class ScaleRequest(BaseModel):
     max_replicas: int = Field(default=100, ge=1, le=10_000)
 
     @model_validator(mode="after")
-    def validate_replica_bounds(self) -> "ScaleRequest":
+    def validate_replica_bounds(self) -> ScaleRequest:
         if self.min_replicas > self.max_replicas:
             raise ValueError("min_replicas cannot exceed max_replicas")
         if not self.min_replicas <= self.current_replicas <= self.max_replicas:
@@ -35,7 +35,7 @@ class ScalingPolicy(BaseModel):
     scale_down_step: int = Field(default=1, ge=1, le=100)
 
     @model_validator(mode="after")
-    def validate_thresholds(self) -> "ScalingPolicy":
+    def validate_thresholds(self) -> ScalingPolicy:
         if self.cpu_down >= self.cpu_up or self.memory_down >= self.memory_up:
             raise ValueError("down thresholds must be lower than up thresholds")
         return self
