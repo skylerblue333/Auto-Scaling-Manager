@@ -1,44 +1,43 @@
-<!-- PORTFOLIO PROJECT PROFILE: maintained by the repository owner -->
+# Sky Scaling Policy
 
-## Project profile and code-audit snapshot
+**Status: engineering beta.** A bounded FastAPI scaling-decision service that recommends replica changes from CPU/memory signals without mutating infrastructure.
 
-**What this is:** **Auto-Scaling-Manager** is a public repository described as: “Custom auto-scaling logic based on application metrics. #SkyCoin4444 #AI #Blockchain #DevOps #Innovation” Its dominant language signals are **Python (4 files)**.
+## Implemented behavior
 
-**Why it has value:** Its value is best understood through the implementation evidence currently present in the repository: **17 tracked files** were observed in the shallow audit, with the source structure and existing documentation providing the project’s specific context. This README does not treat a prototype, experiment, or archive as a production system without supporting evidence.
+- validates bounded service identifiers and utilization percentages
+- explicit current/min/max replica bounds
+- configurable scale-up/down thresholds and step sizes
+- rejects overlapping up/down threshold bands
+- scales up when either upper utilization threshold is reached
+- scales down only when both lower utilization thresholds are satisfied
+- never recommends replicas outside configured min/max bounds
+- explicitly reports `infrastructure_mutated: false`
+- `/healthz` and `/readyz` operational endpoints
+- tests for upper/lower bounds, mixed-signal hold behavior, invalid policies, and backward-compatible `action` output
+- CI gates for compile, Ruff, pytest, runtime dependency audit, Docker build, non-root verification, and a real container health smoke test
 
-**Implementation evidence:** 2 test-related file(s) detected; 2 dependency or package manifest(s) detected; 2 build/CI/infrastructure signal(s) detected; and 3 documentation or governance file(s) detected. Test filenames observed include `tests/__init__.py`, `tests/test_main.py`. Dependency or package files include `package.json`, `requirements.txt`. Build, CI, or infrastructure signals include `Dockerfile`, `.github/workflows/ci.yml`.
+## Example
 
-**Current status:** The repository is tracked on the `main` branch. The existing source tree, configuration, tests, workflows, and documentation remain authoritative for supported behavior and maturity. A code audit is not a production-readiness certification, and the presence of a test or workflow file does not establish that all checks pass.
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/evaluate \
+  -H 'content-type: application/json' \
+  -d '{"service":"api","cpu_percent":90,"memory_percent":70,"current_replicas":3,"min_replicas":2,"max_replicas":8}'
+```
 
-**Relationship to the wider portfolio:** This repository is one focused component of the broader Skyler Blue Spillers portfolio across AI, software engineering, cloud and DevOps, cybersecurity, blockchain, finance, education, social systems, and creative work. It may provide a service boundary, implementation pattern, experiment, archive, or reusable idea for related repositories. Treat repositories as technical dependencies only where documented interfaces and verified project requirements support that relationship.
+A recommendation may look like:
 
-**Quality and security note:** No obvious secret-like pattern was detected by the limited static scan; this is not a substitute for a security audit. No TODO/FIXME marker was detected in the scanned text files.
+```json
+{"service":"api","action":"scale_up","current_replicas":3,"desired_replicas":4,"reason":"upper utilization threshold reached","infrastructure_mutated":false}
+```
 
----
+## SKYCOIN4444 integration
 
-# Auto Scaling Manager
+Use this service as a policy/recommendation boundary for Kubernetes, ECS, EC2, workers, or other ecosystem workloads. A separately authenticated controller must decide whether to apply the recommendation and must enforce cooldown, rollout, quota, health, budget, and provider-specific safeguards.
 
-![GitHub stars](https://img.shields.io/github/stars/skylerblue333/Auto-Scaling-Manager?style=flat-square)
-![GitHub license](https://img.shields.io/github/license/skylerblue333/Auto-Scaling-Manager?style=flat-square)
+## Explicit limitations
 
-## 🌟 Overview
-**Auto-Scaling-Manager** is a professional-grade project within the **SkyCoin4444** ecosystem. It focuses on delivering high-value solutions in the domain of **Python**.
+This repository does not call cloud APIs, change Kubernetes resources, hold AWS credentials, execute Terraform, or automatically scale infrastructure. It does not provide predictive autoscaling, queue-depth policies, SLO-aware decisions, cooldown history, stabilization windows, multi-metric time series, cost optimization, HA, or production deployment.
 
-## 🚀 Key Features
-- **Scalable Architecture**: Designed for enterprise-level growth and performance.
-- **Modern Standards**: Implements best practices for clean code and maintainability.
-- **Robust Integration**: Built to work seamlessly within modern cloud-native environments.
+Single point-in-time CPU/memory values can be noisy. Production controllers should evaluate trusted aggregated telemetry and apply hysteresis/cooldown before infrastructure mutation.
 
-## 🛠️ Technology Stack
-- **Primary Domain**: Python
-- **Ecosystem**: SkyCoin4444 Digital Platform
-
-## 📂 Structure
-The project is organized into a modular structure to ensure clarity and ease of development.
-
-## 👨‍💻 Author
-**Skyler Blue Spillers**
-*Professional Chess Player & Software Engineer*
-
----
-*Powered by SkyCoin4444*
+See `SECURITY.md` and `CHANGELOG.md` for product and security boundaries.
